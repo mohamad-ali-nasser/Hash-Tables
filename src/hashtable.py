@@ -1,6 +1,9 @@
 # '''
 # Linked List hash table key/value pair
 # '''
+
+import hashlib
+
 class LinkedPair:
     def __init__(self, key, value):
         self.key = key
@@ -23,7 +26,10 @@ class HashTable:
 
         You may replace the Python hash with DJB2 as a stretch goal.
         '''
-        return hash(key)
+        
+        self.key = key.encode()
+        
+        return hash(self.key)
 
 
     def _hash_djb2(self, key):
@@ -32,7 +38,14 @@ class HashTable:
 
         OPTIONAL STRETCH: Research and implement DJB2
         '''
-        pass
+        self.key = key
+        hash_DJB2 = 5381
+        for x in self.key:
+            hash_DJB2 = (( hash_DJB2 << 5) + hash_DJB2) + ord(x)
+        
+        return hash_DJB2 & 0xFFFFFFFF
+        
+        
 
 
     def _hash_mod(self, key):
@@ -40,7 +53,8 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
         '''
-        return self._hash(key) % self.capacity
+        
+        return self._hash_djb2(key) % self.capacity
 
 
     def insert(self, key, value):
@@ -51,7 +65,13 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.value = value
+        self.key = key
+        index = self._hash_mod(key)
+        
+        self.storage[index] = value
+        
+        return self.storage
 
 
 
@@ -63,7 +83,12 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.key = key
+        index = self._hash_mod(key)
+        
+        self.storage[index] = None
+        
+        return self.storage
 
 
     def retrieve(self, key):
@@ -74,7 +99,10 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.key = key
+        index = self._hash_mod(key)
+        
+        return self.storage[index]
 
 
     def resize(self):
@@ -84,11 +112,30 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.capacity = self.capacity * 2
+        self.storage2 = [None] * self.capacity
+        for i in self.storage:
+            if i == None:
+                continue
+            hashed = self._hash_mod(i)
+            self.storage2.insert(hashed, i)
+        self.storage = self.storage2
+        return self.storage
 
 
 
 if __name__ == "__main__":
+    example = HashTable(8)
+    print(example._hash("some string"))
+    print(example._hash_djb2("some string")) 
+    print(example._hash_mod("some string"))
+    print(example.insert("Name of string", "some string"))
+    print(example.insert("Name of string 2", "some string 2"))
+    print(example.retrieve("Name of string"))
+    print(example.resize())
+    print(example.remove("Name of string"))
+
+
     ht = HashTable(2)
 
     ht.insert("line_1", "Tiny hash table")
